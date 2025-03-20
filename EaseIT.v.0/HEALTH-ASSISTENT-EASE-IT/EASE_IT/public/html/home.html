@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EASEIT - Home</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Adjust the CSS file path if needed -->
+  <link rel="stylesheet" href="../css/home.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-green-600">EASEIT</h1>
+      <div class="flex items-center space-x-4">
+        <span class="text-gray-700">Welcome, <span id="displayUsername" class="font-semibold"></span></span>
+        <button onclick="logout()" class="logout-btn">
+          <i class="fas fa-sign-out-alt mr-2"></i>Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 pt-24 pb-12">
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Scan Food Card -->
+      <div class="card p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">
+          <i class="fas fa-camera mr-2 text-blue-500"></i>Scan Food
+        </h2>
+        <div class="upload-area text-center mb-4">
+          <input type="file" id="upload-input" accept="image/*" class="hidden">
+          <label for="upload-input" class="cursor-pointer">
+            <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-4"></i>
+            <p class="text-gray-600">Click to take photo or upload an image</p>
+            <p class="text-sm text-gray-500">Supported formats: JPG, PNG</p>
+          </label>
+        </div>
+        <div class="flex justify-center">
+          <button id="upload-btn" class="btn-scan">
+            <i class="fas fa-search mr-2"></i>Analyze Food
+          </button>
+        </div>
+      </div>
+
+      <!-- Updated Scan Results Card -->
+      <div class="card p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">
+          <i class="fas fa-clipboard-list mr-2 text-green-500"></i>Scan Results
+        </h2>
+        <div id="scanResult" class="result-box cursor-pointer">
+          <p class="text-gray-500 text-center">No scan results yet. Upload an image to analyze.</p>
+        </div>
+      </div>
+
+      <!-- Update Health Data Card -->
+      <div class="card p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">
+          <i class="fas fa-heartbeat mr-2 text-red-500"></i>Update Health Data
+        </h2>
+        <div id="healthDataSummary" class="mb-4 p-4 bg-gray-100 rounded">
+          <p class="text-gray-600">Loading health conditions...</p>
+        </div>
+        <button id="editHealthBtn" class="btn-scan">
+          <i class="fas fa-edit mr-2"></i>Edit Health Conditions
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
+  
+    if (!username || !token) {
+      window.location.href = "/html/signin.html";
+    } else {
+      document.getElementById("displayUsername").textContent = username;
+    }
+
+    document.getElementById("scanResult").addEventListener("click", function () {
+    const scanText = document.getElementById("scanResult").innerText;
+    if (scanText.trim() !== "No scan results yet. Upload an image to analyze.") {
+        localStorage.setItem("lastScanResult", scanText); // Store the scan result
+        window.location.href = "../chatbot/chatbot.html";
+    }
+});
+
+
+    document.getElementById("editHealthBtn").addEventListener("click", function() {
+      window.location.href = "/html/health-data.html";
+    });
+
+    async function fetchHealthData() {
+      try {
+        const res = await fetch("http://localhost:3000/api/healthdata", {
+          method: "GET",
+          headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          displayHealthData(data.conditions);
+        } else {
+          console.error("Failed to fetch health data:", res.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching health data:", error);
+      }
+    }
+
+    function displayHealthData(conditions) {
+      const summary = document.getElementById('healthDataSummary');
+      let conditionList = [];
+      
+      if (conditions && Object.keys(conditions).length > 0) {
+        let listHTML = '<ul class="list-disc pl-5">';
+        for (const section in conditions) {
+          const sectionData = conditions[section];
+          const keys = Object.keys(sectionData).filter(k => sectionData[k] === true);
+          if (keys.length > 0) {
+            listHTML += `<li class="font-semibold">${section.replace(/([A-Z])/g, ' $1')}: ${keys.join(', ')}</li>`;
+            conditionList.push(...keys);
+          }
+        }
+        listHTML += '</ul>';
+        summary.innerHTML = listHTML || `<p class="text-gray-600">No health conditions specified.</p>`;
+      } else {
+        summary.innerHTML = `<p class="text-gray-600">No health conditions specified. Click 'Edit' to add your health conditions.</p>`;
+      }
+      
+      localStorage.setItem('healthConditions', JSON.stringify(conditionList));
+    }
+    
+    fetchHealthData();
+  </script>
+
+  <script src="../js/ocr.js"></script> 
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</body>
+</html>
+
+
+
+
+
+
