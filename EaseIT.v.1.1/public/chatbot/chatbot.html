@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EASE IT Chatbot</title>
+    <link rel="stylesheet" href="chatbot.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button id="home-button" class="btn-home">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1>EASE IT Chatbot</h1>
+        </div>
+
+        <div id="chat-messages" class="chat-box"></div>
+
+        <div class="chat-input-container">
+            <input type="file" id="file-input" hidden accept="image/*">
+            <button id="attachment-btn" class="attach-btn">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="mic-btn" class="mic-btn">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button id="send-button">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+            
+        </div>
+    </div>
+
+    <script src="chat.js"></script>
+    <script src="../js/chatocr.js"></script> 
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</body>
+</html>
+</body>
+</html>
+
+
+
+
+

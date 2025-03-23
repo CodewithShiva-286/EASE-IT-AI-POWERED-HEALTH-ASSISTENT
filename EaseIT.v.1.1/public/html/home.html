@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EASEIT - Home</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/home.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-green-600">EASEIT</h1>
+      <div class="flex items-center space-x-4">
+        <span class="text-gray-700">Welcome, <span id="displayUsername" class="font-semibold"></span></span>
+        <button id="logoutBtn" class="logout-btn bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+          <i class="fas fa-sign-out-alt mr-2"></i>Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 pt-24 pb-12">
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Scan Food Card -->
+      <div class="card p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">
+          <i class="fas fa-camera mr-2 text-blue-500"></i>Scan Food
+        </h2>
+
+        <!-- Camera Preview -->
+        <div class="mb-4 text-center">
+          <video id="cameraPreview" class="hidden w-full rounded-lg" autoplay></video>
+          <canvas id="capturedImageCanvas" class="hidden"></canvas>
+        </div>
+
+        <!-- File Upload -->
+        <div class="upload-area text-center mb-4">
+          <input type="file" id="upload-input" accept="image/*" class="hidden">
+          <label for="upload-input" class="cursor-pointer">
+            <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-4"></i>
+            <p class="text-gray-600">Click to upload an image</p>
+            <p class="text-sm text-gray-500">Supported formats: JPG, PNG</p>
+          </label>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center">
+          <button id="upload-btn" class="btn-scan bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
+            <i class="fas fa-search mr-2"></i>Analyze Food
+          </button>
+        </div>
+      </div>
+
+      <!-- Scan Results Card -->
+      <div class="card p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">
+          <i class="fas fa-clipboard-list mr-2 text-green-500"></i>Scan Results
+        </h2>
+        <div id="scanResult" class="result-box cursor-pointer">
+          <p class="text-gray-500 text-center">No scan results yet. Upload an image to analyze.</p>
+        </div>
+      </div>
+
+      <!-- Health Data Card -->
+      <div class="card p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">
+          <i class="fas fa-heartbeat mr-2 text-red-500"></i>Your Health Data
+        </h2>
+        <div id="healthDataSummary" class="mb-4 p-4 bg-gray-100 rounded shadow">
+          <p class="text-gray-600">Fetching health conditions...</p>
+        </div>
+        <button id="editHealthBtn" class="btn-scan bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
+          <i class="fas fa-edit mr-2"></i>Edit Health Conditions
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Chatbot Icon -->
+  <button id="chatbotBtn" class="fixed bottom-6 right-6 bg-green-500 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg hover:bg-green-600 transition">
+    <i class="fas fa-comment-dots text-2xl"></i>
+  </button>
+
+  <script>
+    // Logout Function
+    document.getElementById("logoutBtn").addEventListener("click", function () {
+      localStorage.removeItem("username");
+      localStorage.removeItem("token");
+      localStorage.removeItem("healthConditions"); // Clear health data
+      window.location.href = "/html/signin.html";
+    });
+  
+    // Authentication Check
+    const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
+  
+    if (!username || !token) {
+      window.location.href = "/html/signin.html";
+    } else {
+      document.getElementById("displayUsername").textContent = username;
+    }
+  
+    // Fetch and Display Health Data
+    async function fetchHealthData() {
+      try {
+        const res = await fetch("http://localhost:3000/api/healthdata", {
+          method: "GET",
+          headers: { "Authorization": "Bearer " + token }
+        });
+  
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem("healthConditions", JSON.stringify(data.conditions));
+          displayHealthData(data.conditions);
+        } else {
+          console.error("Failed to fetch health data:", res.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching health data:", error);
+      }
+    }
+  
+    function displayHealthData(conditions) {
+      const summary = document.getElementById('healthDataSummary');
+      let conditionList = [];
+  
+      if (conditions && Object.keys(conditions).length > 0) {
+        let listHTML = '<ul class="list-disc pl-5">';
+        for (const section in conditions) {
+          const sectionData = conditions[section];
+          const keys = Object.keys(sectionData).filter(k => sectionData[k] === true);
+          if (keys.length > 0) {
+            listHTML += `<li class="font-semibold">${section.replace(/([A-Z])/g, ' $1')}: ${keys.join(', ')}</li>`;
+            conditionList.push(...keys);
+          }
+        }
+        listHTML += '</ul>';
+        summary.innerHTML = listHTML || `<p class="text-gray-600">No health conditions specified.</p>`;
+      } else {
+        summary.innerHTML = `<p class="text-gray-600">No health conditions specified. Click 'Edit' to add your health conditions.</p>`;
+      }
+  
+      localStorage.setItem('healthConditions', JSON.stringify(conditionList));
+    }
+  
+    fetchHealthData();
+  
+    // ✅ FIXED: Camera now opens correctly
+    document.getElementById("upload-btn").addEventListener("click", function () {
+      const choice = confirm("Do you want to take a photo? Click 'OK' for Camera or 'Cancel' for Gallery.");
+  
+      if (choice) {
+        openCamera();
+      } else {
+        document.getElementById("upload-input").removeAttribute("capture");
+        document.getElementById("upload-input").click();
+      }
+    });
+  
+    let videoStream = null;
+  
+    function openCamera() {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+          videoStream = stream;
+          const video = document.createElement("video");
+          video.srcObject = stream;
+          video.play();
+  
+          setTimeout(() => capturePhoto(video), 3000); // Auto-capture after 3 seconds
+        })
+        .catch(error => {
+          console.error("Camera access denied:", error);
+          alert("Could not access the camera. Please allow permissions.");
+        });
+    }
+  
+    function capturePhoto(video) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+  
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+      const capturedImage = canvas.toDataURL("image/png");
+      localStorage.setItem("capturedImage", capturedImage);
+  
+      videoStream.getTracks().forEach(track => track.stop());
+  
+      alert("Photo captured successfully! Now analyzing...");
+    }
+  
+    // ✅ NEW: Clicking on Scan Result redirects to chatbot
+    function goToChatbot() {
+      const scanText = document.getElementById("scanResult").innerText;
+  
+      if (scanText.trim() !== "No scan results yet. Upload an image to analyze.") {
+        localStorage.setItem("lastScanResult", scanText); // Store the scan result
+      }
+  
+      window.location.href = "../chatbot/chatbot.html";
+    }
+  
+    document.getElementById("scanResult").addEventListener("click", goToChatbot);
+    document.getElementById("chatbotBtn").addEventListener("click", goToChatbot);
+  
+    // ✅ NEW: Ensure chatbot displays the last scan result (if available)
+    if (window.location.pathname.includes("chatbot.html")) {
+      const chatbotMessage = localStorage.getItem("lastScanResult");
+  
+      setTimeout(() => {
+        if (chatbotMessage) {
+          alert(`Chatbot: Based on your scan - ${chatbotMessage}`);
+        } else {
+          alert("Chatbot: How can I help you today?");
+        }
+      }, 1000);
+    }
+  
+    // Navigate to Edit Health Data Page
+    document.getElementById("editHealthBtn").addEventListener("click", function () {
+      window.location.href = "/html/health-data.html";
+    });
+  </script>
+  
+  <script src="../js/ocr.js"></script> 
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</body>
+</html>
+
+
+
+
+
+
