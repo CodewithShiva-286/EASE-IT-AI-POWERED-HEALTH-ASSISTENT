@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 
 // Import API routes
 const authRoutes = require('./routes/auth');
-const healthDataRoutes = require('./routes/healthdata');
+const healthDataRoutes = require('./routes/healthData');
 const chatbotRoutes = require('./routes/chatRoutes');
 const ocrRoutes = require('./routes/ocrRoutes'); // OCR route
 
