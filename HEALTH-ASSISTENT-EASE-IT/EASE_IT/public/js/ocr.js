@@ -28,7 +28,7 @@ async function recognizeText(imageSrc) {
     scanResult.innerHTML = '<p class="text-gray-500 text-center">Processing... ⏳</p>';
     try {
         const healthConditions = localStorage.getItem('healthConditions') || "No health data available";
-        const response = await fetch('http://localhost:3000/api/ocr/analyze', {  
+        const response = await fetch('https://ease-it-ai.onrender.com/api/ocr/analyze', {  
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ imageSrc, healthConditions })

@@ -108,7 +108,7 @@
     // Fetch and Display Health Data
     async function fetchHealthData() {
       try {
-        const res = await fetch("http://localhost:3000/api/healthdata", {
+        const res = await fetch("https://ease-it-ai.onrender.com/api/healthdata", {
           method: "GET",
           headers: { "Authorization": "Bearer " + token }
         });
