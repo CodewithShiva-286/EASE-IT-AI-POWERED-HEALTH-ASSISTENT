@@ -23,6 +23,15 @@
     </div>
   </nav>
 
+  <!-- Instructions Box -->
+<div class="instructions-box">
+  <strong>Instructions:</strong>
+  <ul>
+      <li>Upload <b>a clear image</b> for better analysis.</li>
+      <li>Prefer images of the <b>ingredient list only</b>, if possible.</li>
+  </ul>
+</div>
+
   <!-- Main Content -->
   <div class="container mx-auto px-4 pt-24 pb-12">
     <div class="grid md:grid-cols-2 gap-8">
@@ -49,12 +58,21 @@
         </div>
 
         <!-- Buttons -->
-        <div class="flex justify-center">
-          <button id="upload-btn" class="btn-scan bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
-            <i class="fas fa-search mr-2"></i>Analyze Food
-          </button>
-        </div>
-      </div>
+<div class="flex justify-center">
+  <button id="open-camera-btn" class="btn-scan bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
+    <i class="fas fa-camera mr-2"></i>OPEN CAMERA
+  </button>
+</div>
+
+<div id="camera-popup" class="popup">
+  <div class="popup-content">
+      <p class="popup-instruction">📌 Please capture a **clear ingredients image** if possible.</p>
+      <video id="camera-preview" autoplay></video>
+      <button id="capture-btn">📷 Capture</button>
+      <button id="close-popup">❌ Close</button>
+  </div>
+</div>
+
 
       <!-- Scan Results Card -->
       <div class="card p-6">
@@ -231,6 +249,7 @@
   
   <script src="../js/ocr.js"></script> 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>
 
