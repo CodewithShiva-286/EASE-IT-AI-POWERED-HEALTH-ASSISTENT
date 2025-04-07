@@ -59,10 +59,7 @@
 
 <!-- Buttons -->
 <div class="flex justify-center gap-4">
-  <!-- Upload Button -->
-  <button id="upload-btn" class="btn-scan bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
-    <i class="fas fa-cloud-upload-alt mr-2"></i>Upload from Gallery
-  </button>
+
 
   <!-- Open Camera Button -->
   <button id="open-camera-btn" class="btn-scan bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
@@ -175,52 +172,6 @@
   
     fetchHealthData();
   
-    // ✅ FIXED: Camera now opens correctly
-    document.getElementById("upload-btn").addEventListener("click", function () {
-      const choice = confirm("Do you want to take a photo? Click 'OK' for Camera or 'Cancel' for Gallery.");
-  
-      if (choice) {
-        openCamera();
-      } else {
-        document.getElementById("upload-input").removeAttribute("capture");
-        document.getElementById("upload-input").click();
-      }
-    });
-  
-    let videoStream = null;
-  
-    function openCamera() {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(stream => {
-          videoStream = stream;
-          const video = document.createElement("video");
-          video.srcObject = stream;
-          video.play();
-  
-          setTimeout(() => capturePhoto(video), 3000); // Auto-capture after 3 seconds
-        })
-        .catch(error => {
-          console.error("Camera access denied:", error);
-          alert("Could not access the camera. Please allow permissions.");
-        });
-    }
-  
-    function capturePhoto(video) {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-  
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
-      const capturedImage = canvas.toDataURL("image/png");
-      localStorage.setItem("capturedImage", capturedImage);
-  
-      videoStream.getTracks().forEach(track => track.stop());
-  
-      alert("Photo captured successfully! Now analyzing...");
-    }
-  
     // ✅ NEW: Clicking on Scan Result redirects to chatbot
     function goToChatbot() {
       const scanText = document.getElementById("scanResult").innerText;
@@ -258,58 +209,102 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="js/home.js"></script>
 
-<script>
-  // Camera popup functionality
+  <script>
+    // ✅ Camera popup workflow
+    const cameraPopup = document.getElementById("camera-popup");
+    const cameraPreview = document.getElementById("camera-preview");
+    const openCameraBtn = document.getElementById("open-camera-btn");
+    const captureBtn = document.getElementById("capture-btn");
+    const closePopup = document.getElementById("close-popup");
 
-  const cameraPopup = document.getElementById("camera-popup");
-  const cameraPreview = document.getElementById("camera-preview");
-  const openCameraBtn = document.getElementById("open-camera-btn");
-  const captureBtn = document.getElementById("capture-btn");
-  const closePopup = document.getElementById("close-popup");
+    let popupStream = null;
 
-  let popupStream = null;
+    openCameraBtn.addEventListener("click", () => {
+      cameraPopup.classList.remove("hidden");
 
-  openCameraBtn.addEventListener("click", () => {
-    cameraPopup.classList.remove("hidden");
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+          popupStream = stream;
+          cameraPreview.srcObject = stream;
+        })
+        .catch(err => {
+          console.error("Camera access denied", err);
+          alert("Camera access is blocked or not available.");
+        });
+    });
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-      .then(stream => {
-        popupStream = stream;
-        cameraPreview.srcObject = stream;
+    captureBtn.addEventListener("click", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = cameraPreview.videoWidth;
+      canvas.height = cameraPreview.videoHeight;
+      canvas.getContext("2d").drawImage(cameraPreview, 0, 0);
+
+      const imageData = canvas.toDataURL("image/png");
+      cameraPopup.classList.add("hidden");
+      if (popupStream) popupStream.getTracks().forEach(track => track.stop());
+
+      // Convert base64 to Blob
+      function dataURLtoBlob(dataurl) {
+        const arr = dataurl.split(",");
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+      }
+
+      // Send captured image to OCR backend
+      const formData = new FormData();
+      formData.append("image", dataURLtoBlob(imageData), "captured.png");
+
+      fetch("/api/ocr", {
+        method: "POST",
+        body: formData,
       })
-      .catch(err => {
-        console.error("Camera access denied", err);
-        alert("Camera access is blocked or not available.");
-      });
-  });
+        .then(res => res.json())
+        .then(data => {
+          console.log("OCR Result:", data);
+          if (data.text) {
+            document.getElementById("scanResult").innerText = data.text;
+          } else {
+            document.getElementById("scanResult").innerText = "No text found.";
+          }
+        })
+        .catch(err => {
+          console.error("OCR error:", err);
+          document.getElementById("scanResult").innerText = "Error analyzing image.";
+        });
+    });
 
-  captureBtn.addEventListener("click", () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = cameraPreview.videoWidth;
-    canvas.height = cameraPreview.videoHeight;
-    canvas.getContext("2d").drawImage(cameraPreview, 0, 0);
+    closePopup.addEventListener("click", () => {
+      cameraPopup.classList.add("hidden");
+      if (popupStream) popupStream.getTracks().forEach(track => track.stop());
+    });
 
-    const imageData = canvas.toDataURL("image/png");
-    localStorage.setItem("capturedImage", imageData);
+    document.getElementById("scanResult").innerText = "Analyzing image...";
 
-    alert("Image captured. Redirecting to analysis...");
-    cameraPopup.classList.add("hidden");
+    // ✅ Show last scan result in chatbot
+    if (window.location.pathname.includes("chatbot.html")) {
+      const chatbotMessage = localStorage.getItem("lastScanResult");
+      setTimeout(() => {
+        if (chatbotMessage) {
+          alert(`Chatbot: Based on your scan - ${chatbotMessage}`);
+        } else {
+          alert("Chatbot: How can I help you today?");
+        }
+      }, 1000);
+    }
 
-    if (popupStream) popupStream.getTracks().forEach(track => track.stop());
-  });
-
-  closePopup.addEventListener("click", () => {
-    cameraPopup.classList.add("hidden");
-    if (popupStream) popupStream.getTracks().forEach(track => track.stop());
-  });
-</script>
-
-</body>
+    // ✅ Health data navigation
+    document.getElementById("editHealthBtn").addEventListener("click", function () {
+      window.location.href = "/html/health-data.html";
+    });
+  </script>
 </body>
 </html>
-
-
-
 
 
 
