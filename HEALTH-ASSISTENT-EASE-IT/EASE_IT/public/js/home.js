@@ -1,62 +1,45 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const openCameraBtn = document.getElementById("open-camera-btn");
-    const cameraPopup = document.getElementById("camera-popup");
-    const closePopup = document.getElementById("close-popup");
-    const videoElement = document.getElementById("camera-preview");
-    const captureBtn = document.getElementById("capture-btn");
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+const openCameraBtn = document.getElementById("open-camera-btn");
+const cameraPopup = document.getElementById("camera-popup");
+const video = document.getElementById("camera");
+const captureBtn = document.getElementById("capture-btn");
 
-    let stream;
+let stream;
 
-    // Open Camera Popup
-    openCameraBtn.addEventListener("click", async () => {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            videoElement.srcObject = stream;
-            cameraPopup.style.display = "block";
-        } catch (error) {
-            console.error("Error accessing camera:", error);
-            alert("Camera access denied or not available.");
-        }
-    });
+// Open Camera Preview
+openCameraBtn.addEventListener("click", async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    cameraPopup.classList.remove("hidden");
+  } catch (err) {
+    alert("Camera access denied or unavailable.");
+  }
+});
 
-    // Close Popup
-    closePopup.addEventListener("click", () => {
-        cameraPopup.style.display = "none";
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
-    });
+// Capture Image
+captureBtn.addEventListener("click", () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Capture Image
-    captureBtn.addEventListener("click", () => {
-        canvas.width = videoElement.videoWidth;
-        canvas.height = videoElement.videoHeight;
-        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+  canvas.toBlob((blob) => {
+    const formData = new FormData();
+    formData.append("image", blob, "captured-image.jpg");
 
-        // Convert image to data URL
-        const imageData = canvas.toDataURL("image/png");
+    fetch("/upload", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("OCR Result:", data);
+        window.location.href = "/html/result.html";
+      })
+      .catch((err) => console.error("Upload error:", err));
+  });
 
-        // Send image to OCR processing (existing workflow)
-        sendImageToOCR(imageData);
-
-        // Close the popup after capturing
-        cameraPopup.style.display = "none";
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
-    });
-
-    function sendImageToOCR(imageData) {
-        // Assuming you already have a function that handles image uploads
-        fetch('/upload-image', {
-            method: 'POST',
-            body: JSON.stringify({ image: imageData }),
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(response => response.json())
-        .then(data => console.log("OCR Response:", data))
-        .catch(error => console.error("Error sending image:", error));
-    }
+  stream.getTracks().forEach((track) => track.stop());
+  cameraPopup.classList.add("hidden");
 });
