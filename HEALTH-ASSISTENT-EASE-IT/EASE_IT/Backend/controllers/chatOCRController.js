@@ -1,12 +1,16 @@
 chatOCRController.js (updated)
 const { analyzeOCR } = require('./ocrController');
 
-exports.analyzeChatImage = async (imageFileBuffer, healthConditions) => {
+exports.analyzeChatImage = async (imageFile, healthConditions) => {
     try {
-        // Convert image buffer to base64 data URL
-        const imageSrc = `data:image/png;base64,${imageFileBuffer.toString('base64')}`;
+        // Convert image file to data URL
+        const imageSrc = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(imageFile);
+        });
 
-        // Use existing OCR analysis logic
+        // Use the existing OCR analysis logic
         const result = await analyzeOCR({ 
             imageSrc, 
             healthConditions 
@@ -19,5 +23,5 @@ exports.analyzeChatImage = async (imageFileBuffer, healthConditions) => {
         };
     } catch (error) {
         return { success: false, error: "Chat scan failed: " + error.message };
-    }
+   }
 };

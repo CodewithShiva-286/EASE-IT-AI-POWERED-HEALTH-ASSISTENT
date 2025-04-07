@@ -1,48 +1,46 @@
+const fetch = require('node-fetch');
 const Tesseract = require('tesseract.js');
-const fs = require('fs');
-const path = require('path');
 
-exports.analyzeOCR = async (file) => {
-  console.log("📌 Received OCR request (file-based)");
+exports.analyzeOCR = async ({ imageSrc, healthConditions }) => {
+    console.log("📌 Received OCR request");
 
-  try {
-    if (!file) throw new Error("No image file provided.");
+    try {
+        if (!imageSrc) throw new Error("Missing imageSrc in request.");
 
-    const imagePath = path.resolve(file.path);
+        // ✅ Perform OCR using Tesseract.js
+        console.log("🔄 Processing OCR...");
+        const { data: { text } } = await Tesseract.recognize(imageSrc, 'eng', {
+            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,() -:',
+        });
 
-    console.log("🔄 Processing OCR...");
-    const { data: { text } } = await Tesseract.recognize(imagePath, 'eng', {
-      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,() -:',
-    });
+        console.log("📌 Extracted Text (Raw):", text);
 
-    console.log("📌 Extracted Text (Raw):", text);
+        // ✅ Clean extracted text
+        let cleanedText = text.replace(/[^a-zA-Z0-9\s,():-]/g, ''); // Strict cleaning
+        console.log("📌 Cleaned Extracted Text:", cleanedText);
 
-    // ✅ Clean extracted text
-    let cleanedText = text.replace(/[^a-zA-Z0-9\s,():-]/g, '');
-    console.log("📌 Cleaned Extracted Text:", cleanedText);
+        // ✅ Extract ingredients (Improved regex)
+        let ingredients = "";
+        const match = cleanedText.match(/ingredients?[:\s-](.*)/i); // More flexible regex
 
-    // ✅ Extract ingredients
-    let ingredients = "";
-    const match = cleanedText.match(/ingredients?[:\s-](.*)/i);
+        if (match) ingredients = match[1].trim();
 
-    if (match) ingredients = match[1].trim();
+        // ✅ Extract additional lines to ensure full ingredient list
+        let lines = cleanedText.split("\n");
+        let startIndex = lines.findIndex(line => line.toLowerCase().includes("ingredients"));
 
-    // ✅ Extract more lines for full context
-    let lines = cleanedText.split("\n");
-    let startIndex = lines.findIndex(line => line.toLowerCase().includes("ingredients"));
+        if (startIndex !== -1) {
+            ingredients = lines.slice(startIndex, startIndex + 15).join(" "); // Extract more lines
+        }
 
-    if (startIndex !== -1) {
-      ingredients = lines.slice(startIndex, startIndex + 15).join(" ");
-    }
+        // ✅ Ensure meaningful ingredient data
+        const validWords = ingredients.split(/\s+/).filter(word => word.length > 2);
+        if (!ingredients || validWords.length < 5) {
+            console.log("⚠️ Extracted ingredients are too short:", ingredients);
+            return "⚠️ OCR detected text, but the ingredients list is incomplete. Please upload a clearer image.";
+        }
 
-    // ✅ Ensure meaningful data
-    const validWords = ingredients.split(/\s+/).filter(word => word.length > 2);
-    if (!ingredients || validWords.length < 5) {
-      console.log("⚠️ Extracted ingredients are too short:", ingredients);
-      return "⚠️ OCR detected text, but the ingredients list is incomplete. Please upload a clearer image.";
-    }
-
-    console.log("📌 Final Extracted Ingredients:", ingredients);
+        console.log("📌 Final Extracted Ingredients:", ingredients);
 
         // ✅ Build AI analysis prompt
         const analysisPrompt = `Health conditions of the user: ${healthConditions}\n\nIngredients detected: ${ingredients}\n\nBased on the user's health conditions, 

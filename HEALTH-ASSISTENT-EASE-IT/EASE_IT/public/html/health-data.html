@@ -132,7 +132,7 @@
       const healthData = buildHealthData();
 
       try {
-        const res = await fetch("https://ease-it-ai.onrender.com/api/healthdata", {
+        const res = await fetch("http://localhost:3000/api/healthdata", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

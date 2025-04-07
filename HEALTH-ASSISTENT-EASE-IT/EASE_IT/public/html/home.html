@@ -23,15 +23,6 @@
     </div>
   </nav>
 
-  <!-- Instructions Box -->
-<div class="instructions-box">
-  <strong>Instructions:</strong>
-  <ul>
-      <li>Upload <b>a clear image</b> for better analysis.</li>
-      <li>Prefer images of the <b>ingredient list only</b>, if possible.</li>
-  </ul>
-</div>
-
   <!-- Main Content -->
   <div class="container mx-auto px-4 pt-24 pb-12">
     <div class="grid md:grid-cols-2 gap-8">
@@ -49,7 +40,7 @@
 
         <!-- File Upload -->
         <div class="upload-area text-center mb-4">
-          <input type="file" id="imageUpload" accept="image/*" class="hidden">
+          <input type="file" id="upload-input" accept="image/*" class="hidden">
           <label for="upload-input" class="cursor-pointer">
             <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-4"></i>
             <p class="text-gray-600">Click to upload an image</p>
@@ -57,33 +48,20 @@
           </label>
         </div>
 
-<!-- Buttons -->
-<div class="flex justify-center gap-4">
-
-
-  <!-- Open Camera Button -->
-  <button id="open-camera-btn" class="btn-scan bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-    <i class="fas fa-camera mr-2"></i>Open Camera
-  </button>
-</div>
-
-<!-- Camera Popup -->
-<div id="camera-popup" class="popup hidden">
-  <div class="popup-content">
-    <p class="popup-instruction">📌 Please capture a <strong>clear ingredients image</strong>.</p>
-    <video id="camera-preview" autoplay></video>
-    <button id="capture-btn" class="bg-green-500 text-white px-4 py-1 rounded mt-2">📷 Capture</button>
-    <button id="close-popup" class="bg-red-500 text-white px-4 py-1 rounded mt-2">❌ Close</button>
-  </div>
-</div>
-
+        <!-- Buttons -->
+        <div class="flex justify-center">
+          <button id="upload-btn" class="btn-scan bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
+            <i class="fas fa-search mr-2"></i>Analyze Food
+          </button>
+        </div>
+      </div>
 
       <!-- Scan Results Card -->
       <div class="card p-6">
         <h2 class="text-xl font-bold mb-4 text-gray-800">
           <i class="fas fa-clipboard-list mr-2 text-green-500"></i>Scan Results
         </h2>
-        <div id="result-box" class="result-box cursor-pointer">
+        <div id="scanResult" class="result-box cursor-pointer">
           <p class="text-gray-500 text-center">No scan results yet. Upload an image to analyze.</p>
         </div>
       </div>
@@ -130,7 +108,7 @@
     // Fetch and Display Health Data
     async function fetchHealthData() {
       try {
-        const res = await fetch("https://ease-it-ai.onrender.com/api/healthdata", {
+        const res = await fetch("http://localhost:3000/api/healthdata", {
           method: "GET",
           headers: { "Authorization": "Bearer " + token }
         });
@@ -172,9 +150,55 @@
   
     fetchHealthData();
   
+    // ✅ FIXED: Camera now opens correctly
+    document.getElementById("upload-btn").addEventListener("click", function () {
+      const choice = confirm("Do you want to take a photo? Click 'OK' for Camera or 'Cancel' for Gallery.");
+  
+      if (choice) {
+        openCamera();
+      } else {
+        document.getElementById("upload-input").removeAttribute("capture");
+        document.getElementById("upload-input").click();
+      }
+    });
+  
+    let videoStream = null;
+  
+    function openCamera() {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+          videoStream = stream;
+          const video = document.createElement("video");
+          video.srcObject = stream;
+          video.play();
+  
+          setTimeout(() => capturePhoto(video), 3000); // Auto-capture after 3 seconds
+        })
+        .catch(error => {
+          console.error("Camera access denied:", error);
+          alert("Could not access the camera. Please allow permissions.");
+        });
+    }
+  
+    function capturePhoto(video) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+  
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+      const capturedImage = canvas.toDataURL("image/png");
+      localStorage.setItem("capturedImage", capturedImage);
+  
+      videoStream.getTracks().forEach(track => track.stop());
+  
+      alert("Photo captured successfully! Now analyzing...");
+    }
+  
     // ✅ NEW: Clicking on Scan Result redirects to chatbot
     function goToChatbot() {
-      const scanText = document.getElementById("result-box").innerText;
+      const scanText = document.getElementById("scanResult").innerText;
   
       if (scanText.trim() !== "No scan results yet. Upload an image to analyze.") {
         localStorage.setItem("lastScanResult", scanText); // Store the scan result
@@ -207,104 +231,11 @@
   
   <script src="../js/ocr.js"></script> 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="js/home.js"></script>
-
-  <script>
-    // ✅ Camera popup workflow
-    const cameraPopup = document.getElementById("camera-popup");
-    const cameraPreview = document.getElementById("camera-preview");
-    const openCameraBtn = document.getElementById("open-camera-btn");
-    const captureBtn = document.getElementById("capture-btn");
-    const closePopup = document.getElementById("close-popup");
-
-    let popupStream = null;
-
-    openCameraBtn.addEventListener("click", () => {
-      cameraPopup.classList.remove("hidden");
-
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(stream => {
-          popupStream = stream;
-          cameraPreview.srcObject = stream;
-        })
-        .catch(err => {
-          console.error("Camera access denied", err);
-          alert("Camera access is blocked or not available.");
-        });
-    });
-
-    captureBtn.addEventListener("click", () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = cameraPreview.videoWidth;
-      canvas.height = cameraPreview.videoHeight;
-      canvas.getContext("2d").drawImage(cameraPreview, 0, 0);
-
-      const imageData = canvas.toDataURL("image/png");
-      cameraPopup.classList.add("hidden");
-      if (popupStream) popupStream.getTracks().forEach(track => track.stop());
-
-      // Convert base64 to Blob
-      function dataURLtoBlob(dataurl) {
-        const arr = dataurl.split(",");
-        const mime = arr[0].match(/:(.*?);/)[1];
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-          u8arr[n] = bstr.charCodeAt(n);
-        }
-        return new Blob([u8arr], { type: mime });
-      }
-
-      // Send captured image to OCR backend
-      const formData = new FormData();
-      formData.append("image", dataURLtoBlob(imageData), "captured.png");
-
-      fetch("/api/ocr", {
-        method: "POST",
-        body: formData,
-      })
-        .then(res => res.json())
-        .then(data => {
-          console.log("OCR Result:", data);
-          if (data.text) {
-            document.getElementById("scanResult").innerText = data.text;
-          } else {
-            document.getElementById("scanResult").innerText = "No text found.";
-          }
-        })
-        .catch(err => {
-          console.error("OCR error:", err);
-          document.getElementById("scanResult").innerText = "Error analyzing image.";
-        });
-    });
-
-    closePopup.addEventListener("click", () => {
-      cameraPopup.classList.add("hidden");
-      if (popupStream) popupStream.getTracks().forEach(track => track.stop());
-    });
-
-    document.getElementById("scanResult").innerText = "Analyzing image...";
-
-    // ✅ Show last scan result in chatbot
-    if (window.location.pathname.includes("chatbot.html")) {
-      const chatbotMessage = localStorage.getItem("lastScanResult");
-      setTimeout(() => {
-        if (chatbotMessage) {
-          alert(`Chatbot: Based on your scan - ${chatbotMessage}`);
-        } else {
-          alert("Chatbot: How can I help you today?");
-        }
-      }, 1000);
-    }
-
-    // ✅ Health data navigation
-    document.getElementById("editHealthBtn").addEventListener("click", function () {
-      window.location.href = "/html/health-data.html";
-    });
-  </script>
 </body>
 </html>
+
+
+
 
 
 

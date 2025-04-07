@@ -5,72 +5,33 @@ const scanResult = document.querySelector('#scanResult');
 uploadBtn.addEventListener('click', () => {
     const useCamera = confirm("Do you want to use the camera? Click OK for camera, Cancel to upload a file.");
     if (useCamera) {
-        openCamera(); // triggers camera
+        openCamera();
     } else {
-        uploadInput.click(); // triggers file selection
+        uploadInput.click();
     }
 });
 
-// 📁 Handle image upload from file picker
 uploadInput.addEventListener('change', (ev) => {
     const file = ev.target.files[0];
-    if (!file) return alert('Please select an image.');
-    uploadImageToBackend(file);
+    if (!file) {
+        alert('Please select an image.');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        recognizeText(e.target.result);
+    };
+    reader.readAsDataURL(file);
 });
 
-// 📸 Camera logic
-let videoStream = null;
-
-function openCamera() {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(stream => {
-            videoStream = stream;
-            const video = document.createElement("video");
-            video.srcObject = stream;
-            video.play();
-
-            // Create temporary preview for user
-            const cameraContainer = document.createElement("div");
-            cameraContainer.style.textAlign = "center";
-            cameraContainer.innerHTML = "<p>Capturing image in 3 seconds...</p>";
-            cameraContainer.appendChild(video);
-            scanResult.innerHTML = "";
-            scanResult.appendChild(cameraContainer);
-
-            setTimeout(() => captureAndUpload(video), 3000);
-        })
-        .catch(error => {
-            console.error("Camera access denied:", error);
-            alert("Could not access the camera. Please allow permissions.");
-        });
-}
-
-function captureAndUpload(video) {
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-
-    videoStream.getTracks().forEach(track => track.stop()); // stop camera
-
-    canvas.toBlob(blob => {
-        if (!blob) return alert("Failed to capture image.");
-        const file = new File([blob], "captured-image.png", { type: "image/png" });
-        uploadImageToBackend(file);
-    }, "image/png");
-}
-
-// 🔁 Reusable function to upload image file (from file or camera)
-async function uploadImageToBackend(file) {
+async function recognizeText(imageSrc) {
     scanResult.innerHTML = '<p class="text-gray-500 text-center">Processing... ⏳</p>';
-
     try {
-        const formData = new FormData();
-        formData.append('image', file); // send to backend
-
-        const response = await fetch('https://ease-it-ai.onrender.com/api/ocr', {
+        const healthConditions = localStorage.getItem('healthConditions') || "No health data available";
+        const response = await fetch('http://localhost:3000/api/ocr/analyze', {  
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageSrc, healthConditions })
         });
 
         if (!response.ok) throw new Error(`Failed to analyze image. Status: ${response.status}`);
@@ -78,8 +39,8 @@ async function uploadImageToBackend(file) {
         const data = await response.json();
         console.log("📌 OCR Response from backend:", data);
 
-        if (data.text) {
-            scanResult.innerHTML = `<div id="analysisResult" style="cursor:pointer;">${data.text.replace(/\n/g, '<br>')}</div>`;
+        if (data.response) {
+            scanResult.innerHTML = `<div id="analysisResult" style="cursor:pointer;">${data.response.replace(/\n/g, '<br>')}</div>`;
         } else {
             scanResult.innerHTML = `<p class="text-red-500">No meaningful response received.</p>`;
         }
@@ -88,4 +49,3 @@ async function uploadImageToBackend(file) {
         scanResult.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
     }
 }
-
