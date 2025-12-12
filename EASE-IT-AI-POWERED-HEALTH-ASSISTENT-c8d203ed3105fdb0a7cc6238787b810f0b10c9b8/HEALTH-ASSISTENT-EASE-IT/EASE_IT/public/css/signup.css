@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #c2e59c, #64b3f4); /* Same background as sign-in */
+  min-height: 100vh;
+}
+
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-success {
+  background-color: #48bb78;
+  transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: #38a169;
+}
