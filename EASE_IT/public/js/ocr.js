@@ -208,7 +208,7 @@ async function recognizeText(imageSrc) {
 
   try {
     const healthConditions = localStorage.getItem("healthConditions") || "No health data available";
-    const response = await fetch("http://localhost:10000/api/ocr/analyze", {
+    const response = await fetch("/api/ocr/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imageSrc, healthConditions })

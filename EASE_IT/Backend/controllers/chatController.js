@@ -1,4 +1,3 @@
-const fetch = require('node-fetch');
 const User = require('../models/User');
 
 const API_KEY = process.env.GEMINI_API_KEY;
@@ -54,12 +53,17 @@ Health Issues: ${healthConditionsStr}
 **User Query:** "${prompt}"
 BawarchiBot Response:`;
 
-        const response = await fetch(API_URL, {
+        if (!API_KEY) {
+            throw new Error('GEMINI_API_KEY is missing from environment variables.');
+        }
+
+        if (typeof globalThis.fetch !== 'function') {
+            throw new Error('fetch is not available in this Node.js runtime.');
+        }
+
+        const response = await globalThis.fetch(`${API_URL}?key=${API_KEY}`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
                     parts: [{ text: chatbotPrompt }]

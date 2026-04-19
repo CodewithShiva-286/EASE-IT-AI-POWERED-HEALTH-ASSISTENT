@@ -1,29 +1,21 @@
 {
-  "name": "ease-it",
+  "name": "ease-it-app",
   "version": "1.0.0",
-  "description": "Ingredient checker application",
-  "main": "index.js",
+  "description": "Application source for EASEIT.",
+  "private": true,
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "build": "echo 'No build step required'",
-    "test": "echo 'No tests specified'"
+    "start": "node Backend/server.js",
+    "dev": "node Backend/server.js",
+    "build": "echo \"No build step required\""
   },
-  "keywords": ["health", "ingredients", "ocr"],
-  "author": "",
+  "keywords": [
+    "health",
+    "ingredients",
+    "ocr"
+  ],
+  "author": "CodewithShiva-286",
   "license": "ISC",
   "engines": {
-    "node": ">=14.0.0"
-  },
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^4.0.14"
-  },
-  "dependencies": {
-    "bcrypt": "^5.1.1",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.12.1"
+    "node": "20.x"
   }
 }

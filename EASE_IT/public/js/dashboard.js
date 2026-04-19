@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function fetchHealthData() {
     try {
-      const res = await fetch("http://localhost:10000/api/healthdata", {
+      const res = await fetch("/api/healthdata", {
         method: "GET",
         headers: { Authorization: "Bearer " + token }
       });

@@ -1,0 +1,46 @@
+{
+  "name": "easeit",
+  "version": "1.0.0",
+  "description": "AI-powered ingredient scanner and health-aware food safety assistant.",
+  "main": "EASE_IT/Backend/server.js",
+  "scripts": {
+    "start": "node EASE_IT/Backend/server.js",
+    "dev": "node EASE_IT/Backend/server.js",
+    "vercel-build": "echo \"No build step required\"",
+    "test": "node --check EASE_IT/Backend/server.js && node --check EASE_IT/Backend/controllers/ocrController.js && node --check EASE_IT/Backend/controllers/chatController.js"
+  },
+  "keywords": [
+    "health",
+    "ingredients",
+    "ocr",
+    "ai",
+    "express",
+    "mongodb"
+  ],
+  "author": "CodewithShiva-286",
+  "license": "ISC",
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.3",
+    "morgan": "^1.10.1",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.104.0",
+    "tesseract.js": "^6.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "overrides": {
+    "form-data": "^4.0.0",
+    "jws": "^4.0.0"
+  }
+}

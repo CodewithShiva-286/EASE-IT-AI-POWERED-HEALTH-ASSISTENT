@@ -10,6 +10,7 @@ const sendButton = document.getElementById('send-button');
 const micButton = document.getElementById('mic-btn');
 const attachmentBtn = document.getElementById('attachment-btn');
 const fileInput = document.getElementById('file-input');
+const token = localStorage.getItem('token');
 
 // State Management
 let chatHistory = [];
@@ -105,6 +106,10 @@ if ('webkitSpeechRecognition' in window) {
 }
 
 // Enhanced File Handling
+attachmentBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
 fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -121,12 +126,15 @@ fileInput.addEventListener('change', async (e) => {
         addMessage('🔍 Analyzing attached file...', false);
         
         try {
-            const formData = new FormData();
-            formData.append('image', file);
-            
+            const imageSrc = await readFileAsDataUrl(file);
+
             const response = await fetch('/api/ocr/analyze', {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageSrc,
+                    healthConditions: localStorage.getItem('healthConditions') || 'No health data'
+                })
             });
             
             if (!response.ok) {
@@ -150,12 +158,24 @@ fileInput.addEventListener('change', async (e) => {
     }
 });
 
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 // Enhanced Chat Functionality
 async function generateResponse(prompt) {
     try {
         const response = await fetch('/api/chatbot/ask', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
             body: JSON.stringify({
                 prompt,
                 chatHistory,

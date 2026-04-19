@@ -1,11 +1,11 @@
-// Load environment variables from .env file
-require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const cors = require('cors');
-const bodyParser = require('body-parser');
+
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+}
 
 // Import API routes
 const authRoutes = require('./routes/auth');
@@ -16,24 +16,39 @@ const ocrRoutes = require('./routes/ocrRoutes'); // OCR route
 const app = express();
 const PORT = process.env.PORT || 10000;  // ✅ Changed to port 3000
 const DB_URI = process.env.DB_URI;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;  // ✅ Load Gemini API Key
+
+let cachedDbConnection = null;
 
 // Middleware
-app.use(cors({ origin: process.env.NODE_ENV === 'production' ? false : 'http://localhost:10000' }));  // ✅ Allows frontend requests
-app.use(express.json({ limit: '5mb' }));  
-app.use(express.urlencoded({ limit: '5mb', extended: true }));
+app.use(cors({ origin: process.env.NODE_ENV === 'production' ? false : 'http://localhost:10000' }));
+app.use(express.json({ limit: process.env.JSON_LIMIT || '8mb' }));
+app.use(express.urlencoded({ limit: process.env.JSON_LIMIT || '8mb', extended: true }));
 
 // Connect to MongoDB
-if (!DB_URI) {
-  console.error('Missing DB_URI environment variable');
-  process.exit(1);
+async function connectToDatabase() {
+  if (!DB_URI) {
+    throw new Error('Missing DB_URI environment variable');
+  }
+
+  if (cachedDbConnection && mongoose.connection.readyState === 1) {
+    return cachedDbConnection;
+  }
+
+  cachedDbConnection = mongoose.connect(DB_URI);
+  await cachedDbConnection;
+  console.log('✅ Connected to MongoDB!');
+  return cachedDbConnection;
 }
-mongoose.connect(DB_URI)
-  .then(() => console.log('✅ Connected to MongoDB!'))
-  .catch((err) => {
-    console.error('❌ Failed to connect to MongoDB:', err);
-    process.exit(1);
-  });
+
+const databaseMiddleware = async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    console.error('❌ Failed to connect to MongoDB:', error);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+};
 
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, '../public')));
@@ -44,6 +59,7 @@ app.get('/', (req, res) => {
 });
 
 // Mount API routes
+app.use('/api', databaseMiddleware);
 app.use('/api/auth', authRoutes);
 app.use('/api/healthdata', healthDataRoutes);
 app.use('/api/chatbot', chatbotRoutes);
@@ -58,8 +74,12 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
 
 

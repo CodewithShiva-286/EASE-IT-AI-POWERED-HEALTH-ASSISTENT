@@ -89,6 +89,50 @@ http://localhost:10000
 
 The backend serves the frontend from `EASE_IT/public`.
 
+## Deploying To Vercel
+
+This repository is configured for Vercel deployment from the repository root.
+
+Vercel entry files:
+
+- `vercel.json`: rewrites all requests to the Express serverless handler.
+- `api/index.js`: Vercel serverless entrypoint that exports the EASEIT Express app.
+- `package.json`: root install metadata and Vercel build script.
+- `EASE_IT/Backend/server.js`: exports the Express app for serverless use and still runs locally with `node server.js`.
+
+### Vercel Settings
+
+Use these settings when importing the project:
+
+| Setting | Value |
+| --- | --- |
+| Framework Preset | Other |
+| Root Directory | Repository root |
+| Build Command | `npm run vercel-build` |
+| Output Directory | Leave empty |
+| Install Command | `npm install` |
+
+### Required Environment Variables
+
+Add these in Vercel Project Settings -> Environment Variables:
+
+```env
+DB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=1h
+GEMINI_API_KEY=your_gemini_api_key
+JSON_LIMIT=8mb
+```
+
+Do not add `PORT` on Vercel. Vercel assigns the runtime port automatically.
+
+### Deployment Notes
+
+- The frontend uses relative API paths like `/api/auth/login`, so it works locally and on Vercel.
+- Express serves the static frontend from `EASE_IT/public`.
+- MongoDB connects only for `/api/*` requests, which keeps static pages fast.
+- The app uses OCR and AI requests inside serverless functions. Very large images may exceed serverless request limits, so upload clear, compressed label images.
+
 ## Environment Variables
 
 | Name | Required | Description |
@@ -104,7 +148,7 @@ Do not commit `.env` files or API keys. The root `.gitignore` is configured to e
 
 - Run the server from `EASE_IT/Backend`.
 - A running Express server keeps the terminal open by design. Use a second terminal for other commands.
-- The app expects the API and static frontend to be served from `http://localhost:10000`.
+- During local development, the API and static frontend are served from `http://localhost:10000`.
 - OCR and AI analysis depend on the backend being connected to MongoDB and having a valid Gemini API key.
 
 ## Developer

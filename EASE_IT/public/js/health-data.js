@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadHealthData() {
     try {
-      const res = await fetch("http://localhost:10000/api/healthdata", {
+      const res = await fetch("/api/healthdata", {
         method: "GET",
         headers: { Authorization: "Bearer " + token }
       });
@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveBtn.querySelector("span").textContent = "Saving";
 
     try {
-      const res = await fetch("http://localhost:10000/api/healthdata", {
+      const res = await fetch("/api/healthdata", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
