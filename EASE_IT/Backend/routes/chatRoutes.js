@@ -1,9 +1,10 @@
 const express = require('express');
 const { generateChatResponse } = require('../controllers/chatController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.post('/ask', async (req, res) => {
+router.post('/ask', authMiddleware, async (req, res) => {
     const { prompt, chatHistory, lastScanResult } = req.body;
 
     if (!prompt) {
@@ -11,7 +12,7 @@ router.post('/ask', async (req, res) => {
     }
 
     try {
-        const response = await generateChatResponse({ prompt, chatHistory, lastScanResult });
+        const response = await generateChatResponse({ prompt, chatHistory, lastScanResult, userId: req.user.userId });
         res.json({ response });
     } catch (error) {
         console.error("❌ Chatbot Error:", error);

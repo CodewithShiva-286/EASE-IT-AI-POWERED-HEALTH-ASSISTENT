@@ -1,11 +1,28 @@
 const fetch = require('node-fetch');
+const User = require('../models/User');
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
-exports.generateChatResponse = async ({ prompt, chatHistory, lastScanResult }) => {
+exports.generateChatResponse = async ({ prompt, chatHistory, lastScanResult, userId }) => {
     try {
-        const healthConditions = "Lactose Intolerance, Peanut Allergy"; // Replace with dynamic data
+        // Fetch user health conditions
+        const user = await User.findById(userId);
+        if (!user) throw new Error('User not found');
+        
+        // Extract active health conditions
+        const healthConditions = [];
+        for (const category in user.healthData) {
+            for (const condition in user.healthData[category]) {
+                if (user.healthData[category][condition]) {
+                    healthConditions.push(condition.replace(/([A-Z])/g, ' $1').trim());
+                }
+            }
+        }
+        const healthConditionsStr = healthConditions.length > 0 ? healthConditions.join(', ') : 'None';
+        
+        // Build conversation transcript
+        const conversationTranscript = chatHistory ? chatHistory.map(entry => `User: ${entry.user}\nBot: ${entry.bot}`).join('\n\n') : '';
         
         const chatbotPrompt = `🌶️ **Namaste Foodie Dost!** 🍛
 You're BawarchiBot - a funny Indian chef that:
@@ -27,16 +44,22 @@ Nahi yaar, isme milk hai (tumhara pet dard karega 😢)
 Try ye karo: 🍚 Cauliflower biryani with coconut milk
 Chhota tip: Mirch kam rakna, warna haath jal jaenge! 😜"
 
+**Conversation History:**
+${conversationTranscript}
+
 **Current Context:**
 ${lastScanResult || 'No scan data'}
-Health Issues: ${healthConditions}
+Health Issues: ${healthConditionsStr}
 
 **User Query:** "${prompt}"
 BawarchiBot Response:`;
 
-        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+        const response = await fetch(API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
             body: JSON.stringify({
                 contents: [{
                     parts: [{ text: chatbotPrompt }]

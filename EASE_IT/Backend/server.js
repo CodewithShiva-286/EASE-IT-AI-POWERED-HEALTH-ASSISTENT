@@ -19,13 +19,15 @@ const DB_URI = process.env.DB_URI;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;  // ✅ Load Gemini API Key
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:10000' }));  // ✅ Allows frontend requests
-app.use(express.json({ limit: '50mb' }));  
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use(cors({ origin: process.env.NODE_ENV === 'production' ? false : 'http://localhost:10000' }));  // ✅ Allows frontend requests
+app.use(express.json({ limit: '5mb' }));  
+app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 // Connect to MongoDB
+if (!DB_URI) {
+  console.error('Missing DB_URI environment variable');
+  process.exit(1);
+}
 mongoose.connect(DB_URI)
   .then(() => console.log('✅ Connected to MongoDB!'))
   .catch((err) => {
@@ -41,21 +43,19 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/html/index.html'));
 });
 
-app.get('/api/get-key', (req, res) => {
-  res.json({ apiKey: process.env.GEMINI_API_KEY || null });
-});
-
 // Mount API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/healthdata', healthDataRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/ocr', ocrRoutes);
 
-// Debug Logging Middleware
-app.use((req, res, next) => {
-  console.log(`📌 ${req.method} Request to ${req.url}`);
-  next();
-});
+// Debug Logging Middleware (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`📌 ${req.method} Request to ${req.url}`);
+    next();
+  });
+}
 
 // Start the server
 app.listen(PORT, () => {

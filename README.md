@@ -113,7 +113,6 @@ Maintained by:
 
 - Name: CodewithShiva-286
 - GitHub: [CodewithShiva-286](https://github.com/CodewithShiva-286)
-- Email: 173526594+CodewithShiva-286@users.noreply.github.com
 
 ## Contributing
 

@@ -3,157 +3,114 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="../css/signup.css">
   <title>Sign Up - EASEIT</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/signup.css">
 </head>
-<body class="flex items-center justify-center min-h-screen p-6">
-  <div class="w-full max-w-md">
-    <!-- Logo and Back Button -->
-    <div class="flex justify-between items-center mb-8">
-      <a href="/html/index.html" class="flex items-center space-x-2 text-green-600 hover:text-green-700 transition duration-300">
-        <i class="fas fa-arrow-left"></i>
-        <span>Back to Home</span>
-      </a>
-      <div class="flex items-center space-x-2">
-        <i class="fas fa-leaf text-green-500 text-2xl"></i>
-        <span class="text-2xl font-bold text-green-600">EASEIT</span>
-      </div>
-    </div>
-
-    <!-- Sign Up Card -->
-    <div class="bg-white bg-opacity-90 p-8 rounded-xl shadow-lg hover:shadow-xl transition">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-2">Join Us! 🎉</h2>
-        <p class="text-gray-600">Start your healthy journey with EASEIT</p>
+<body class="signup-page">
+  <main class="signup-shell">
+    <section class="signup-card" aria-labelledby="signupTitle">
+      <div class="signup-nav">
+        <a href="/html/index.html" class="back-link">
+          <i class="fas fa-arrow-left"></i>
+          <span>Home</span>
+        </a>
+        <a href="/html/index.html" class="brand-lockup" aria-label="EASEIT home">
+          <span class="brand-mark"><i class="fas fa-leaf"></i></span>
+          <span>EASEIT</span>
+        </a>
       </div>
 
-      <div id="authMessage" class="hidden mb-5 rounded-xl border px-4 py-3 text-sm font-medium" role="status" aria-live="polite"></div>
+      <div class="signup-header">
+        <p class="eyebrow">Create your profile</p>
+        <h1 id="signupTitle">Build a safer food scanner around your health needs.</h1>
+        <p>Save your profile once, then let EASEIT flag ingredients that matter to you.</p>
+      </div>
 
-      <form id="signupForm" class="space-y-6">
-        <!-- Username Field -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-2" for="username">Username</label>
-          <div class="relative">
-            <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="text" id="username" 
-                   class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-300 focus:border-green-500 focus:outline-none"
-                   placeholder="Enter your username" required />
+      <div id="authMessage" class="auth-message hidden" role="status" aria-live="polite"></div>
+
+      <form id="signupForm" class="signup-form">
+        <div class="form-field">
+          <label for="username">Username</label>
+          <div class="input-shell">
+            <i class="fas fa-user"></i>
+            <input type="text" id="username" name="username" placeholder="Choose a username" autocomplete="username" required>
           </div>
         </div>
 
-        <!-- Email Field -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-2" for="email">Email Address</label>
-          <div class="relative">
-            <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="email" id="email" 
-                   class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-300 focus:border-green-500 focus:outline-none"
-                   placeholder="Enter your email" required />
+        <div class="form-field">
+          <label for="email">Email address</label>
+          <div class="input-shell">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
           </div>
         </div>
 
-        <!-- Password Field -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-2" for="password">Password</label>
-          <div class="relative">
-            <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="password" id="password" 
-                   class="w-full pl-10 pr-12 py-3 rounded-xl border-2 border-gray-300 focus:border-green-500 focus:outline-none"
-                   placeholder="Enter your password" required />
-            <button type="button" onclick="togglePassword('password')" 
-                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+        <div class="form-field">
+          <label for="password">Password</label>
+          <div class="input-shell">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="Create a password" autocomplete="new-password" minlength="6" required>
+            <button type="button" id="password-toggle-btn" class="password-toggle" aria-label="Show password" aria-pressed="false">
               <i class="fas fa-eye" id="password-toggle-icon"></i>
             </button>
           </div>
         </div>
 
-        <!-- Terms and Conditions -->
-        <div class="flex items-center text-sm">
-          <input type="checkbox" id="terms" class="mr-2 rounded text-green-500 focus:ring-green-500" required>
-          <label for="terms" class="text-gray-600">
-            I agree to the <a href="/html/terms.html" class="text-green-600 hover:text-green-700">Terms and Conditions</a>
-          </label>
-        </div>
+        <label class="terms-option" for="terms">
+          <input type="checkbox" id="terms" name="terms" required>
+          <span>I agree to the <a href="/html/terms.html">Terms and Conditions</a></span>
+        </label>
 
-        <!-- Sign Up Button -->
-        <button type="submit" class="w-full py-3 rounded-xl bg-green-500 text-white font-medium hover:bg-green-600 transition">
-          Sign Up
+        <button type="submit" class="signup-submit">
+          <span>Create account</span>
+          <i class="fas fa-arrow-right"></i>
         </button>
       </form>
 
-      <!-- Sign In Link -->
-      <div class="text-center mt-6">
-        <p class="text-gray-600">
-          Already have an account? 
-          <a href="/html/signin.html" class="text-green-600 hover:text-green-700 font-medium">
-            Sign in here
-          </a>
-        </p>
+      <p class="auth-switch">
+        Already have an account?
+        <a href="/html/signin.html">Sign in</a>
+      </p>
+    </section>
+
+    <aside class="signup-visual" aria-label="EASEIT onboarding preview">
+      <div class="visual-panel">
+        <div class="profile-preview">
+          <div class="preview-header">
+            <span class="preview-dot"></span>
+            <span>Health profile setup</span>
+          </div>
+          <div class="profile-chips">
+            <span>Peanuts</span>
+            <span>Lactose</span>
+            <span>Gluten</span>
+            <span>Diabetes</span>
+          </div>
+          <div class="scan-card">
+            <div class="scan-line"></div>
+            <p>Personalized ingredient matching activates after signup.</p>
+          </div>
+        </div>
+        <div class="benefit-grid">
+          <div>
+            <i class="fas fa-camera"></i>
+            <span>Scan labels</span>
+          </div>
+          <div>
+            <i class="fas fa-shield-heart"></i>
+            <span>Match risks</span>
+          </div>
+          <div>
+            <i class="fas fa-comments"></i>
+            <span>Ask AI</span>
+          </div>
+        </div>
       </div>
-    </div>
+    </aside>
+  </main>
 
-    <!-- Health Tips -->
-    <div class="mt-8 text-center text-gray-600 text-sm">
-      <p>🌱 Tip: Small changes lead to a healthier life!</p>
-    </div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-  <script>
-    function togglePassword(inputId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(inputId + '-toggle-icon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    }
-
-    function showAuthMessage(message, type = "error") {
-      const authMessage = document.getElementById("authMessage");
-      authMessage.textContent = message;
-      authMessage.classList.remove("hidden", "border-red-200", "bg-red-50", "text-red-700", "border-green-200", "bg-green-50", "text-green-700");
-
-      if (type === "success") {
-        authMessage.classList.add("border-green-200", "bg-green-50", "text-green-700");
-      } else {
-        authMessage.classList.add("border-red-200", "bg-red-50", "text-red-700");
-      }
-    }
-
-    document.getElementById("signupForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const username = document.getElementById("username").value;
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        const res = await fetch("http://localhost:10000/api/auth/register", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ username, email, password })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          localStorage.setItem("username", data.username);
-          localStorage.setItem("token", data.token);
-          window.location.href = "/html/health-data.html";
-        } else {
-          const error = await res.json();
-          showAuthMessage(error.error || "Unable to create your account.");
-        }
-      } catch (err) {
-        console.error("Error:", err);
-        showAuthMessage("Failed to sign up. Please try again.");
-      }
-    });
-  </script>
+  <script src="../js/signup.js"></script>
 </body>
 </html>
-

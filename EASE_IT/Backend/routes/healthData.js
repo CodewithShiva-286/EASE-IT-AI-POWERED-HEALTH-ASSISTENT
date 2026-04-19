@@ -9,20 +9,40 @@ router.post('/', authMiddleware, async (req, res) => {
   const userId = req.user.userId; // Extracted from the JWT via authMiddleware
   const { healthData } = req.body;
 
+  if (!healthData || typeof healthData !== 'object' || Array.isArray(healthData)) {
+    return res.status(400).json({ error: 'Invalid health data format' });
+  }
+
   try {
     const user = await User.findById(userId);
-    if (user) {
-      // Update each category based on the received healthData
-      for (let category in healthData) {
-        for (let condition in healthData[category]) {
-          user.healthData[category][condition] = healthData[category][condition];
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Safely update each category
+    for (const category in healthData) {
+      if (!Object.prototype.hasOwnProperty.call(healthData, category)) continue;
+      if (['__proto__', 'constructor', 'prototype'].includes(category)) continue;
+      
+      if (!user.healthData[category]) {
+        user.healthData[category] = {};
+      }
+      
+      const catData = healthData[category];
+      if (typeof catData === 'object' && !Array.isArray(catData)) {
+        for (const condition in catData) {
+          if (!Object.prototype.hasOwnProperty.call(catData, condition)) continue;
+          if (['__proto__', 'constructor', 'prototype'].includes(condition)) continue;
+          
+          const value = catData[condition];
+          if (typeof value === 'boolean' || typeof value === 'string' || typeof value === 'number') {
+            user.healthData[category][condition] = value;
+          }
         }
       }
-      await user.save();
-      res.json({ message: 'Health data updated successfully' });
-    } else {
-      res.status(404).json({ error: 'User not found' });
     }
+    await user.save();
+    res.json({ message: 'Health data updated successfully' });
   } catch (error) {
     console.error('Error updating health data:', error);
     res.status(400).json({ error: 'Error updating health data' });

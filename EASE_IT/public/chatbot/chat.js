@@ -1,17 +1,6 @@
-let API_KEY = ''; // Global API key variable
+let API_KEY = ''; // Remove direct key fetching
 
-// Fetch API key securely from backend
-fetch('/api/get-key')
-  .then(response => response.json())
-  .then(data => {
-      API_KEY = data.apiKey; // ✅ API key is now dynamically set correctly
-      if (!API_KEY) {
-          console.error("❌ API Key not found!");
-      } else {
-          console.log("✅ API Key loaded successfully");
-      }
-  })
-  .catch(error => console.error("❌ Error fetching API key:", error));
+// Remove API key fetch - will proxy through backend
 const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 // DOM Elements
@@ -23,8 +12,18 @@ const attachmentBtn = document.getElementById('attachment-btn');
 const fileInput = document.getElementById('file-input');
 
 // State Management
-let chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
+let chatHistory = [];
 let lastScanResult = localStorage.getItem("lastScanResult") || "";
+
+try {
+  const stored = localStorage.getItem("chatHistory");
+  if (stored) {
+    chatHistory = JSON.parse(stored);
+  }
+} catch (error) {
+  console.warn("Invalid chatHistory in localStorage, resetting:", error);
+  localStorage.removeItem("chatHistory");
+}
 
 // Format Bot Response
 function formatBotResponse(text) {
@@ -51,7 +50,13 @@ function addMessage(message, isUser) {
         content.classList.add('analysis-status');
         content.textContent = message;
     } else {
-        content.innerHTML = isUser ? message : formatBotResponse(message);
+        if (isUser) {
+            content.textContent = message;
+        } else {
+            // Sanitize bot response
+            const sanitized = formatBotResponse(message).replace(/<script[^>]*>.*?<\/script>/gi, '');
+            content.innerHTML = sanitized;
+        }
     }
 
     if (!isUser) {
@@ -81,12 +86,37 @@ if ('webkitSpeechRecognition' in window) {
         userInput.value = transcript;
         micButton.style.backgroundColor = '';
     };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        micButton.style.backgroundColor = '';
+        if (event.error === 'no-speech') {
+            addMessage('No speech detected. Please try again.', false);
+        } else if (event.error === 'audio-capture') {
+            addMessage('Microphone access denied.', false);
+        } else if (event.error === 'not-allowed') {
+            addMessage('Microphone permission required.', false);
+        }
+    };
+
+    recognition.onend = () => {
+        micButton.style.backgroundColor = '';
+    };
 }
 
 // Enhanced File Handling
 fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (file) {
+        if (!file.type.startsWith('image/')) {
+            addMessage('Please select a valid image file.', false);
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            addMessage('File size too large. Please select an image under 5MB.', false);
+            return;
+        }
+        
         addMessage(`📎 ${file.name}`, true);
         addMessage('🔍 Analyzing attached file...', false);
         
@@ -99,10 +129,20 @@ fileInput.addEventListener('change', async (e) => {
                 body: formData
             });
             
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                addMessage(`Analysis failed: ${errorData.error || 'Unknown error'}`, false);
+                return;
+            }
+            
             const result = await response.json();
-            lastScanResult = result.response;
-            localStorage.setItem("lastScanResult", lastScanResult);
-            addMessage(lastScanResult, false);
+            if (result && result.response) {
+                lastScanResult = result.response;
+                localStorage.setItem("lastScanResult", lastScanResult);
+                addMessage(lastScanResult, false);
+            } else {
+                addMessage('Analysis completed but no valid response received.', false);
+            }
             
         } catch (error) {
             addMessage("Arrey! Image scan mein gadbad hai! 📵", false);
@@ -113,23 +153,22 @@ fileInput.addEventListener('change', async (e) => {
 // Enhanced Chat Functionality
 async function generateResponse(prompt) {
     try {
-        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+        const response = await fetch('/api/chatbot/ask', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `User Health Conditions: Lactose Intolerance, Peanut Allergy\n
-                        ${lastScanResult ? `Last Scan: ${lastScanResult}\n` : ''}
-                        User Query: ${prompt}\n
-                        Respond in Hindi-English mix with food emojis and recipes`
-                    }]
-                }]
+                prompt,
+                chatHistory,
+                lastScanResult
             })
         });
         
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
         const data = await response.json();
-        return data.candidates[0].content.parts[0].text;
+        return data.response;
         
     } catch (error) {
         return "Arrey! Kuch technical gadbad hai. Thoda wait karo! 🤖⚡";

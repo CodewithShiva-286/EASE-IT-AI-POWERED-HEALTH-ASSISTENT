@@ -3,160 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <title>Sign In - EASEIT</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-    
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #c2e59c, #64b3f4);
-      min-height: 100vh;
-    }
-  </style>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/signin.css">
 </head>
-<body class="flex items-center justify-center min-h-screen p-6">
-  <div class="w-full max-w-md">
-    <!-- Logo and Back Button -->
-    <div class="flex justify-between items-center mb-8">
-      <a href="/html/index.html" class="flex items-center space-x-2 text-green-600 hover:text-green-700 transition duration-300">
-        <i class="fas fa-arrow-left"></i>
-        <span>Back to Home</span>
-      </a>
-      <div class="flex items-center space-x-2">
-        <i class="fas fa-leaf text-green-500 text-2xl"></i>
-        <span class="text-2xl font-bold text-green-600">EASEIT</span>
-      </div>
-    </div>
-
-    <!-- Sign In Card -->
-    <div class="bg-white bg-opacity-90 p-8 rounded-xl shadow-lg hover:shadow-xl transition">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back! 👋</h2>
-        <p class="text-gray-600">Let's continue your healthy journey together</p>
+<body class="signin-page">
+  <main class="signin-shell">
+    <section class="signin-card" aria-labelledby="signinTitle">
+      <div class="signin-nav">
+        <a href="/html/index.html" class="back-link">
+          <i class="fas fa-arrow-left"></i>
+          <span>Home</span>
+        </a>
+        <a href="/html/index.html" class="brand-lockup" aria-label="EASEIT home">
+          <span class="brand-mark"><i class="fas fa-leaf"></i></span>
+          <span>EASEIT</span>
+        </a>
       </div>
 
-      <div id="authMessage" class="hidden mb-5 rounded-xl border px-4 py-3 text-sm font-medium" role="status" aria-live="polite"></div>
+      <div class="signin-header">
+        <p class="eyebrow">Welcome back</p>
+        <h1 id="signinTitle">Sign in to your food safety workspace.</h1>
+        <p>Continue scanning ingredients, managing your health profile, and asking EASEIT for safer choices.</p>
+      </div>
 
-      <form id="loginForm" class="space-y-6">
-        <!-- Email Field -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-2" for="email">
-            Email Address
-          </label>
-          <div class="relative">
-            <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="email" id="email" 
-                   class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-300 focus:border-green-500 focus:outline-none"
-                   placeholder="Enter your email" required />
+      <div id="authMessage" class="auth-message hidden" role="status" aria-live="polite"></div>
+
+      <form id="loginForm" class="signin-form">
+        <div class="form-field">
+          <label for="email">Email address</label>
+          <div class="input-shell">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
           </div>
         </div>
 
-        <!-- Password Field -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-2" for="password">
-            Password
-          </label>
-          <div class="relative">
-            <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="password" id="password" 
-                   class="w-full pl-10 pr-12 py-3 rounded-xl border-2 border-gray-300 focus:border-green-500 focus:outline-none"
-                   placeholder="Enter your password" required />
-            <button type="button" onclick="togglePassword('password')" 
-                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+        <div class="form-field">
+          <label for="password">Password</label>
+          <div class="input-shell">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" id="password-toggle-btn" class="password-toggle" aria-label="Show password" aria-pressed="false">
               <i class="fas fa-eye" id="password-toggle-icon"></i>
             </button>
           </div>
         </div>
 
-        <!-- Remember Me & Forgot Password -->
-        <div class="flex items-center justify-between text-sm">
-          <label class="flex items-center text-gray-600">
-            <input type="checkbox" class="mr-2 rounded text-green-500 focus:ring-green-500">
-            Remember me
+        <div class="form-row">
+          <label class="check-option" for="remember">
+            <input type="checkbox" id="remember" name="remember">
+            <span>Remember me</span>
           </label>
-          <a href="#" class="text-green-600 hover:text-green-700">Forgot password?</a>
+          <a href="/html/signup.html">Create account</a>
         </div>
 
-        <!-- Sign In Button -->
-        <button type="submit" class="w-full py-3 rounded-xl bg-green-500 text-white font-medium hover:bg-green-600 transition">
-          Sign In
+        <button type="submit" class="signin-submit">
+          <span>Sign in</span>
+          <i class="fas fa-arrow-right"></i>
         </button>
       </form>
+    </section>
 
-      <!-- Sign Up Link -->
-      <div class="text-center mt-6">
-        <p class="text-gray-600">
-          Don't have an account? 
-          <a href="/html/signup.html" class="text-green-600 hover:text-green-700 font-medium">
-            Sign up for free
-          </a>
-        </p>
+    <aside class="signin-visual" aria-label="EASEIT scan preview">
+      <div class="visual-panel">
+        <div class="scan-preview">
+          <div class="scan-line"></div>
+          <div class="label-sample">
+            <span>Ingredients</span>
+            <p>Oats, peanuts, milk solids, palm oil, added sugar</p>
+          </div>
+        </div>
+        <div class="risk-card">
+          <span class="risk-pill">Personalized alert</span>
+          <h2>Peanut risk detected</h2>
+          <p>Your allergy profile is applied before the result reaches the assistant.</p>
+        </div>
       </div>
-    </div>
+    </aside>
+  </main>
 
-    <!-- Health Tips -->
-    <div class="mt-8 text-center text-gray-600 text-sm">
-      <p>🌱 Tip: A healthy diet is the foundation of a healthy life!</p>
-    </div>
-  </div>
-
-  <script>
-    function togglePassword(inputId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(inputId + '-toggle-icon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    }
-
-    function showAuthMessage(message, type = "error") {
-      const authMessage = document.getElementById("authMessage");
-      authMessage.textContent = message;
-      authMessage.classList.remove("hidden", "border-red-200", "bg-red-50", "text-red-700", "border-green-200", "bg-green-50", "text-green-700");
-
-      if (type === "success") {
-        authMessage.classList.add("border-green-200", "bg-green-50", "text-green-700");
-      } else {
-        authMessage.classList.add("border-red-200", "bg-red-50", "text-red-700");
-      }
-    }
-
-    document.getElementById("loginForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      
-      try {
-        const res = await fetch("http://localhost:10000/api/auth/login", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ email, password })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          // Store both username and token
-          localStorage.setItem("username", data.username);
-          localStorage.setItem("token", data.token);
-          window.location.href = "/html/home.html";
-        } else {
-          const error = await res.json();
-          showAuthMessage(error.error || "Unable to sign in with those details.");
-        }
-      } catch (err) {
-        console.error("Error:", err);
-        showAuthMessage("Failed to sign in. Please try again.");
-      }
-    });
-  </script>
+  <script src="../js/signin.js"></script>
 </body>
 </html>
