@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs and runtime output
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+EASE_IT/Backend/server.out.log
+EASE_IT/Backend/server.err.log
+
+# Uploads and generated runtime files
+EASE_IT/Backend/uploads/
+uploads/
+tmp/
+temp/
+
+# Build and cache output
+dist/
+build/
+.cache/
+.parcel-cache/
+.next/
+coverage/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Local certificates and secrets
+*.pem
+*.key
+*.crt

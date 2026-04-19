@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Profile - EASEIT</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/health-data.css">
+</head>
+<body class="health-page">
+  <nav class="health-nav">
+    <a href="/html/home.html" class="brand-lockup">
+      <span class="brand-mark"><i class="fas fa-leaf"></i></span>
+      <span>EASEIT</span>
+    </a>
+    <a class="ghost-link" href="/html/home.html">
+      <i class="fas fa-arrow-left"></i>
+      <span>Dashboard</span>
+    </a>
+  </nav>
+
+  <main class="health-shell">
+    <section class="health-intro">
+      <p class="eyebrow">Health profile</p>
+      <h1>Personalize ingredient checks for <span id="displayUsername"></span>.</h1>
+      <p class="intro-copy">Choose the conditions EASEIT should consider when it flags risky ingredients.</p>
+    </section>
+
+    <section class="profile-card">
+      <aside class="progress-panel" aria-label="Health profile progress">
+        <div class="progress-ring" aria-hidden="true">
+          <span id="progressNumber">1</span>
+          <small>of 7</small>
+        </div>
+        <div>
+          <p class="eyebrow">Current section</p>
+          <h2 id="currentStepTitle">Chronic diseases</h2>
+          <p id="selectedCount">No selections yet</p>
+        </div>
+        <div class="progress-track">
+          <span id="progressBar"></span>
+        </div>
+      </aside>
+
+      <form id="healthForm" class="health-form">
+        <fieldset class="condition-step is-active" data-step="0" data-title="Chronic diseases">
+          <legend>Chronic diseases</legend>
+          <p>Long-term conditions that may affect ingredient safety.</p>
+          <div class="chip-grid">
+            <label class="chip-option"><input type="checkbox" name="ChronicDiseases_Diabetes"><span>Diabetes</span></label>
+            <label class="chip-option"><input type="checkbox" name="ChronicDiseases_Hypertension"><span>Hypertension</span></label>
+            <label class="chip-option"><input type="checkbox" name="ChronicDiseases_Asthma"><span>Asthma</span></label>
+            <label class="chip-option"><input type="checkbox" name="ChronicDiseases_HeartDisease"><span>Heart Disease</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="condition-step" data-step="1" data-title="Infectious diseases">
+          <legend>Infectious diseases</legend>
+          <p>Conditions that may change how dietary advice is interpreted.</p>
+          <div class="chip-grid">
+            <label class="chip-option"><input type="checkbox" name="InfectiousDiseases_Tuberculosis"><span>Tuberculosis</span></label>
+            <label class="chip-option"><input type="checkbox" name="InfectiousDiseases_HepatitisB"><span>Hepatitis B</span></label>
+            <label class="chip-option"><input type="checkbox" name="InfectiousDiseases_HIV_AIDS"><span>HIV/AIDS</span></label>
+            <label class="chip-option"><input type="checkbox" name="InfectiousDiseases_Malaria"><span>Malaria</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="condition-step" data-step="2" data-title="Neurological disorders">
+          <legend>Neurological disorders</legend>
+          <p>Neurological considerations for more careful ingredient guidance.</p>
+          <div class="chip-grid">
+            <label class="chip-option"><input type="checkbox" name="NeurologicalDisorders_Alzheimer"><span>Alzheimer</span></label>
+            <label class="chip-option"><input type="checkbox" name="NeurologicalDisorders_Parkinson"><span>Parkinson</span></label>
+            <label class="chip-option"><input type="checkbox" name="NeurologicalDisorders_Epilepsy"><span>Epilepsy</span></label>
+            <label class="chip-option"><input type="checkbox" name="NeurologicalDisorders_MultipleSclerosis"><span>Multiple Sclerosis</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="condition-step" data-step="3" data-title="Allergies">
+          <legend>Allergies</legend>
+          <p>Common triggers EASEIT should highlight immediately.</p>
+          <div class="chip-grid">
+            <label class="chip-option"><input type="checkbox" name="Allergies_Peanuts"><span>Peanuts</span></label>
+            <label class="chip-option"><input type="checkbox" name="Allergies_Dust"><span>Dust</span></label>
+            <label class="chip-option"><input type="checkbox" name="Allergies_Pollen"><span>Pollen</span></label>
+            <label class="chip-option"><input type="checkbox" name="Allergies_Shellfish"><span>Shellfish</span></label>
+            <label class="chip-option"><input type="checkbox" name="Allergies_Gluten"><span>Gluten</span></label>
+            <label class="chip-option"><input type="checkbox" name="Allergies_Lactose"><span>Lactose</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="condition-step" data-step="4" data-title="Vegan concerns">
+          <legend>Vegan concerns</legend>
+          <p>Ingredient sensitivities commonly relevant to plant-forward diets.</p>
+          <div class="chip-grid">
+            <label class="chip-option"><input type="checkbox" name="VeganConcerns_LactoseIntolerance"><span>Lactose Intolerance</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="condition-step" data-step="5" data-title="Daily issues">
+          <legend>Daily issues</legend>
+          <p>Everyday wellness factors to keep in mind during explanations.</p>
+          <div class="chip-grid">
+            <label class="chip-option"><input type="checkbox" name="DailyIssues_Stress"><span>Stress</span></label>
+            <label class="chip-option"><input type="checkbox" name="DailyIssues_SleepIssues"><span>Sleep Issues</span></label>
+            <label class="chip-option"><input type="checkbox" name="DailyIssues_Anxiety"><span>Anxiety</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="condition-step" data-step="6" data-title="Cycle considerations">
+          <legend>Cycle considerations</legend>
+          <p>Optional context for period-related food sensitivity.</p>
+          <div class="chip-grid">
+            <label class="chip-option"><input type="checkbox" name="OnPeriods_OnPeriods"><span>On Periods</span></label>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button id="prevStepBtn" type="button" class="secondary-action">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+          </button>
+          <button id="nextStepBtn" type="button" class="primary-action">
+            <span>Next</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+          <button id="saveProfileBtn" type="submit" class="primary-action hidden">
+            <i class="fas fa-check"></i>
+            <span>Save profile</span>
+          </button>
+          <button type="reset" class="ghost-button">Reset</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="../js/health-data.js"></script>
+</body>
+</html>

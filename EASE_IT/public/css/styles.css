@@ -1,0 +1,6 @@
+/* Add your common styles here */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #c2e59c, #64b3f4);
+    min-height: 100vh;
+}

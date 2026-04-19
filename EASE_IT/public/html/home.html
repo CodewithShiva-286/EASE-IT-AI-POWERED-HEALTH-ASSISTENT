@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EASEIT - Dashboard</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/home.css">
+</head>
+<body class="dashboard-page">
+  <nav class="dashboard-nav">
+    <a href="/html/home.html" class="brand-lockup">
+      <span class="brand-mark"><i class="fas fa-leaf"></i></span>
+      <span>EASEIT</span>
+    </a>
+    <div class="nav-actions">
+      <span class="welcome-pill">Welcome, <strong id="displayUsername"></strong></span>
+      <button id="logoutBtn" class="icon-text-btn logout-btn" type="button">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="dashboard-shell">
+    <section class="dashboard-hero">
+      <div>
+        <p class="eyebrow">AI ingredient intelligence</p>
+        <h1>Scan food labels with a health-aware second opinion.</h1>
+      </div>
+      <div class="flow-meter" aria-label="Scan workflow">
+        <span class="flow-step is-active" data-stage="scan">Scan</span>
+        <span class="flow-line"></span>
+        <span class="flow-step" data-stage="processing">Processing</span>
+        <span class="flow-line"></span>
+        <span class="flow-step" data-stage="result">Result</span>
+        <span class="flow-line"></span>
+        <span class="flow-step" data-stage="action">Action</span>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="workspace-panel scanner-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Step 1</p>
+            <h2>Capture ingredients</h2>
+          </div>
+          <span class="panel-status"><i class="fas fa-shield-heart"></i> Profile-aware</span>
+        </div>
+
+        <input type="file" id="upload-input" accept="image/*" class="visually-hidden">
+        <video id="cameraPreview" class="camera-preview hidden" autoplay playsinline muted></video>
+        <canvas id="capturedImageCanvas" class="hidden"></canvas>
+
+        <label for="upload-input" class="upload-area">
+          <span class="upload-icon"><i class="fas fa-cloud-arrow-up"></i></span>
+          <span class="upload-title">Drop in an ingredient label</span>
+          <span class="upload-copy">JPG or PNG works best with a clear, flat label image.</span>
+        </label>
+
+        <div class="scan-actions">
+          <button id="upload-btn" class="primary-action" type="button">
+            <i class="fas fa-camera-retro"></i>
+            <span>Start scan</span>
+          </button>
+          <button class="secondary-action" type="button" id="quickGalleryBtn">
+            <i class="fas fa-image"></i>
+            <span>Choose file</span>
+          </button>
+        </div>
+      </article>
+
+      <article class="workspace-panel result-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Step 2</p>
+            <h2>Scan results</h2>
+          </div>
+          <span class="panel-status result-status" id="resultStatus">Ready</span>
+        </div>
+        <div id="scanResult" class="result-box" tabindex="0" role="button" aria-label="Open result in assistant">
+          <div class="empty-state">
+            <i class="fas fa-barcode"></i>
+            <p>No scan results yet.</p>
+            <span>Upload an image to analyze ingredients against your health profile.</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="workspace-panel health-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Profile</p>
+            <h2>Your health data</h2>
+          </div>
+          <button id="editHealthBtn" class="secondary-action compact" type="button">
+            <i class="fas fa-sliders"></i>
+            <span>Edit</span>
+          </button>
+        </div>
+        <div id="healthDataSummary" class="health-summary">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <button id="chatbotBtn" class="chatbot-fab" type="button" aria-label="Open EASEIT assistant">
+    <i class="fas fa-comments"></i>
+  </button>
+
+  <div id="scanSourceModal" class="modal-layer hidden" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="scanSourceTitle">
+      <button id="closeScanModal" class="icon-button modal-close" type="button" aria-label="Close scan options">
+        <i class="fas fa-xmark"></i>
+      </button>
+      <div class="modal-intro">
+        <p class="eyebrow">Scan source</p>
+        <h2 id="scanSourceTitle">How would you like to capture the label?</h2>
+      </div>
+      <div class="source-grid" id="sourceOptions">
+        <button id="chooseCameraBtn" class="source-card" type="button">
+          <i class="fas fa-camera"></i>
+          <span>Use camera</span>
+          <small>Open a live preview and capture the label.</small>
+        </button>
+        <button id="chooseGalleryBtn" class="source-card" type="button">
+          <i class="fas fa-folder-open"></i>
+          <span>Upload image</span>
+          <small>Choose an existing label photo.</small>
+        </button>
+      </div>
+      <div id="cameraPanel" class="camera-panel hidden">
+        <div class="camera-frame">
+          <video id="modalCameraPreview" autoplay playsinline muted></video>
+          <div class="camera-reticle"></div>
+        </div>
+        <div class="camera-controls">
+          <button id="cameraCancelBtn" class="secondary-action" type="button">Cancel</button>
+          <button id="cameraCaptureBtn" class="primary-action" type="button">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            <span>Capture and analyze</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="../js/dashboard.js"></script>
+  <script src="../js/ocr.js"></script>
+</body>
+</html>
