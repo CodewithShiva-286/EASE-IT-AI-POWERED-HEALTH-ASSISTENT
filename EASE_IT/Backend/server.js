@@ -14,8 +14,18 @@ const chatbotRoutes = require('./routes/chatRoutes');
 const ocrRoutes = require('./routes/ocrRoutes'); // OCR route
 
 const app = express();
-const PORT = process.env.PORT || 10000;  // ✅ Changed to port 3000
+const PORT = process.env.PORT || 10000;
 const DB_URI = process.env.DB_URI;
+
+// ✅ Environment Variable Validation
+const requiredEnv = ['DB_URI', 'JWT_SECRET', 'GEMINI_API_KEY'];
+const missingEnv = requiredEnv.filter(env => !process.env[env]);
+
+if (missingEnv.length > 0) {
+  console.error(`❌ CRITICAL ERROR: Missing environment variables: ${missingEnv.join(', ')}`);
+  console.error('The application will now exit to prevent insecure or broken operation.');
+  process.exit(1);
+}
 
 let cachedDbConnection = null;
 

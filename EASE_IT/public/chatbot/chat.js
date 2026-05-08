@@ -1,7 +1,4 @@
-let API_KEY = ''; // Remove direct key fetching
-
-// Remove API key fetch - will proxy through backend
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+// API calls will proxy through backend for security
 
 // DOM Elements
 const chatMessages = document.getElementById('chat-messages');

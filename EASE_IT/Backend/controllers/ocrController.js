@@ -1,5 +1,36 @@
 const Tesseract = require('tesseract.js');
 
+// Helper function for retrying API calls with exponential backoff
+async function retryFetch(url, options, maxRetries = 3, baseDelay = 1000) {
+    let lastError;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await globalThis.fetch(url, options);
+            if (response.ok || response.status < 500) {
+                // Success or client error (4xx) - don't retry
+                return response;
+            }
+            // Server error (5xx) - retry
+            if (attempt < maxRetries) {
+                const delay = baseDelay * Math.pow(2, attempt); // Exponential backoff
+                console.log(`🔄 Retrying API call in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            return response; // Return the failed response after max retries
+        } catch (error) {
+            lastError = error;
+            if (attempt < maxRetries) {
+                const delay = baseDelay * Math.pow(2, attempt);
+                console.log(`🔄 Retrying API call after error in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1}):`, error.message);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+        }
+    }
+    throw lastError;
+}
+
 // Helper function to sanitize input
 function sanitizeInput(input) {
     if (!input) return '';
@@ -8,11 +39,15 @@ function sanitizeInput(input) {
 
 function safeErrorMessage(error) {
     if (error.name === 'AbortError') {
-        return 'AI analysis timed out. Please try again.';
+        return 'AI analysis timed out after 60 seconds. The service may be busy. Please try again in a few minutes.';
     }
 
     if (error.message.includes('GEMINI_API_KEY')) {
         return 'Gemini API key is missing on the server.';
+    }
+
+    if (error.message.includes('AI service request failed with status 503')) {
+        return 'AI service is currently experiencing high demand. Please try again in a few moments.';
     }
 
     if (error.message.includes('AI service request failed')) {
@@ -100,11 +135,11 @@ Caution: ⚠️Preservatives (E211), ⚠️Added Sugar"
         const API_KEY = process.env.GEMINI_API_KEY;
         if (!API_KEY) throw new Error("GEMINI_API_KEY is missing from environment variables.");
 
-        const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
         console.log("📡 Sending request to Gemini AI at", API_URL);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout (increased from 30)
 
         if (typeof globalThis.fetch !== 'function') {
             throw new Error('fetch is not available in this Node.js runtime.');
@@ -112,7 +147,7 @@ Caution: ⚠️Preservatives (E211), ⚠️Added Sugar"
 
         let response;
         try {
-            response = await globalThis.fetch(`${API_URL}?key=${API_KEY}`, {
+            response = await retryFetch(`${API_URL}?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: analysisPrompt }] }] }),
